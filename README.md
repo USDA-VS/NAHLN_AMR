@@ -37,5 +37,3 @@ Basic usage:
 amr_wrapper.py -r1 *_R1*fastq.gz -r2 *_R2*fastq.gz
 ```
 
-# NAHLN_AMR
-# NAHLN_AMR
