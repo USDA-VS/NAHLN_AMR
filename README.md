@@ -1,3 +1,7 @@
+##NAHLN_AMR Scripts
+For questions, please contact Jessica Hicks: jessica.a.hicks@usda.gov
+
+
 # amr_wrapper.py usage:
 
 ## Paths:
@@ -24,8 +28,19 @@ In addition to the above files the following Python files must be in `$PYTHONPAT
 - `spades_stats_parse.py`
 - `kraken2_run.py`
 
-For example:
+##Dependencies:
 
+- Spades
+- Kraken
+- Kraken database; local path should be added to the script or updated to a variable.
+- SeqKit
+- Racon
+- SeqSero
+- MLST
+- Abricate
+- AMRFinder Plus
+- BLAST
+- Python 3.7 or later
 
 ## Run:
 
