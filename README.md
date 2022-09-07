@@ -30,17 +30,18 @@ In addition to the above files the following Python files must be in `$PYTHONPAT
 
 ##Dependencies:
 
-- Spades
-- Kraken
+- Spades https://github.com/ablab/spades
+- Kraken https://ccb.jhu.edu/software/kraken2/
 - Kraken database; local path should be added to the script or updated to a variable.
-- SeqKit
-- Racon
-- SeqSero
-- MLST
-- Abricate
-- AMRFinder Plus
+- SeqSero https://github.com/denglab/SeqSero2
+- MLST https://github.com/tseemann/mlst
+- Abricate https://github.com/tseemann/abricate
+- AMRFinder Plus https://github.com/ncbi/amr
 - BLAST
 - Python 3.7 or later
+
+Many of these are also available from package managers such as Anaconda.
+
 
 ## Run:
 
