@@ -29,6 +29,7 @@ class Kraken2_Identification:
         '''
         See -h
         '''
+        # Internal custom database https://github.com/stuber/instructions/blob/master/kraken2_database.md
         self.kraken_db = "/project/bioinformatic_databases/databases/kraken/kraken2" # Host customer - internal
         # External custom databases https://benlangmead.github.io/aws-indexes/k2
         # self.db = "/project/bioinformatic_databases/databases/kraken/k2_pluspf_20210127" # k2_pluspf_20210127 - external.  Database contains a human genome, but likely no other eukaryote.  Appeared to misidentify based on 3030587329-large (covid sample).
