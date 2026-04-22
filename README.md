@@ -9,8 +9,9 @@ Antimicrobial resistance (AMR) pipeline using Nextflow with dependencies managed
 
 The AMR pipeline provides AMR identification, taxonomic classification, and genome assembly for next-generation sequening data and assemblies.
 
-<img src="https://github.com/USDA-VS/NAHLN_AMR/tree/main/docs/img/AMR.png" width="500" height="700">
-  
+<p align="center">
+  <img src="https://raw.githubusercontent.com/USDA-VS/NAHLN_AMR/main/docs/img/AMR.png" width="500" height="700">
+</p>
 
 ----
 
