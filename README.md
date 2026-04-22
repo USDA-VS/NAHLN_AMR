@@ -84,6 +84,8 @@ nextflow run amr_nextflow.nf \
 ------
 
 ## Command-line options
+
+```bash
 usage: nextflow run amr_nextflow.nf [-profile] [--input_files] [-outdir] [--kraken_db] [-resume]
 
 General:
@@ -115,6 +117,7 @@ Nextflow Options:
     -with-trace             Creates an execution tracing file that contains some useful information about each process.executed in your pipeline script
     -with-timeline          Render an HTML timeline for all processes executed in your pipeline
     -with-dag               creates a file containing a textual representation of the pipeline execution graph in the DOT format     
+```
 
 ------
 
