@@ -1,0 +1,25 @@
+name: kraken_env
+channels:
+  - nodefaults
+  - conda-forge
+  - bioconda
+dependencies:
+  - kraken2
+  - bracken
+  - samtools
+  - bwa
+  - bedtools
+  - freebayes
+  - htslib
+  - vcflib
+  - abyss
+  - python>=3.10,<3.15
+  - pandas
+  - numpy<1.25
+  - biopython
+  - openpyxl
+  - xlsxwriter
+  - humanize
+  - krona
+  - krakentools 
+  - matplotlib

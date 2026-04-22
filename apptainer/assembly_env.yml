@@ -1,0 +1,24 @@
+name: assembly_env
+channels:
+  - nodefaults
+  - conda-forge
+  - bioconda
+dependencies:
+  - spades
+  - samtools
+  - bwa
+  - bedtools
+  - freebayes
+  - htslib
+  - vcflib
+  - abyss
+  - python
+  - pandas
+  - numpy<1.25
+  - biopython
+  - humanize
+  - openpyxl
+  - xlsxwriter
+  - pip
+  - pip:
+    - quast

@@ -1,0 +1,25 @@
+name: analysis_env
+channels:
+  - nodefaults
+  - conda-forge
+  - bioconda
+dependencies:
+  - ncbi-amrfinderplus
+  - blast
+  - spades
+  - python>=3.10,<3.15
+  - pandas
+  - numpy<1.25
+  - biopython
+  - openpyxl
+  - xlsxwriter
+  - humanize
+  - bwa
+  - samtools
+  - packaging
+  - sra-tools
+  - bedtools
+  - svgwrite
+  - cairosvg
+  - fastqc
+  - matplotlib

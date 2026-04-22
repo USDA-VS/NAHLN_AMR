@@ -1,0 +1,56 @@
+name: main_env
+channels:
+  - nodefaults
+  - conda-forge
+  - bioconda
+dependencies:
+  # Core
+  - python=3.11
+  - openjdk=11
+  - ncbi-amrfinderplus>=4.2
+
+  # core bioinfo
+  - abricate
+  - any2fasta
+  - bedtools
+  - blast
+  - bracken
+  - bwa
+  - clustalo
+  - clustalw
+  - entrez-direct
+  - freebayes
+  - hmmer
+  - htslib
+  - kma
+  - kraken2
+  - krakentools
+  - krona
+  - mafft
+  - muscle
+  - picard
+  - plasmidfinder
+  - poa
+  - raxml
+  - salmid
+  - samtools
+  - spades
+  - t-coffee
+  - vcflib
+
+  # python libs
+  - biopython
+  - bokeh
+  - dask
+  - dendropy
+  - h5py
+  - matplotlib-base
+  - networkx
+  - numpy
+  - pandas
+  - pysam
+  - scikit-allel
+  - scikit-learn
+  - scipy
+  - seaborn
+  - statsmodels

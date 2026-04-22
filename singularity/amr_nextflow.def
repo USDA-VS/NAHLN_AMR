@@ -1,0 +1,101 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%environment
+    export CONDA_INSTALL_PATH="/usr/local/miniconda3"
+    export CONDA_BIN_PATH="/usr/local/miniconda3/bin"
+    
+    # Prepend the amr_nextflow conda env bin directly to PATH instead of using conda activate
+    export PATH="/usr/local/miniconda3/envs/amr_nextflow/bin:$CONDA_BIN_PATH:$PATH"
+    
+    # Pipeline specific paths
+    export PATH=$PATH:/git/gitlab/amr_nextflow/bin
+    export PATH=$PATH:/git/gitlab/SeqSero2/bin
+
+    # paths for perl locale
+    export LANG="en_US.UTF-8"
+    export LANGUAGE="en_US.UTF-8"
+    export LC_CTYPE="en_US.UTF-8"
+    export LC_ALL="en_US.UTF-8"
+
+%files
+    # get conda environment file
+    ./amr_nextflow.yml /opt/amr_nextflow.yml
+    
+    # Copy the already-cloned amr_nextflow repo from the host into the container
+    ./amr_nextflow /git/gitlab/amr_nextflow
+
+%post
+    # Prevent interactive prompts during apt-get
+    export DEBIAN_FRONTEND=noninteractive
+
+    apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        unzip \
+        gcc \
+        zlib1g-dev \
+        libcurl4-gnutls-dev \
+        python3-dev \
+        python3-pip \
+        pkg-config \
+        apt-transport-https \
+        dbus \
+        build-essential \
+        git \
+        language-pack-en-base \
+        libbz2-dev \
+        libncurses5-dev \
+        libncursesw5-dev \
+        liblzma-dev \
+        gfortran \
+        curl \
+        wget \
+        texlive-latex-base \
+        texlive-latex-recommended \
+        texlive-fonts-recommended \
+        texlive-latex-extra \
+        texinfo \
+        inkscape \
+        openssh-client
+
+    apt-get autoclean
+
+    # allow auto config of language locales
+    dpkg-reconfigure locales
+
+    # download, install, and update miniconda3 (using latest)
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    bash Miniconda3-latest-Linux-x86_64.sh -b -f -p /usr/local/miniconda3
+    rm Miniconda3-latest-Linux-x86_64.sh
+    
+    # This must be invoked to use conda activate in Apptainer %post  
+    . /usr/local/miniconda3/etc/profile.d/conda.sh 
+
+    # Accept Anaconda Terms of Service for automated builds
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+
+    # create amr_nextflow environment
+    conda env create -f /opt/amr_nextflow.yml
+    conda activate amr_nextflow
+    amrfinder -u
+
+    # make git/gitlab directory
+    mkdir -p /git/gitlab/
+    cd /git/gitlab/
+
+    # clone git repo for SeqSero2. Conda install doesn't work for this package
+    git clone https://github.com/denglab/SeqSero2.git
+    cd SeqSero2
+    
+    # Install into the conda environment
+    python3 -m pip install .
+    
+    # clean up ssh keys from the container
+    rm -rf /root/.ssh
+    rm -rf /tmp/.ssh
+
+%runscript
+    # container currently called by nextflow, not using runscript
+    #
+    # nextflow ~/git/gitlab/amr_nextflow/bin/cluster_amr_nextflow.sh --kraken_db "/kraken_db"

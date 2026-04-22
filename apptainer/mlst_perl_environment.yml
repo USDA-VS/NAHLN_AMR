@@ -1,0 +1,14 @@
+name: legacy_perl_env
+channels:
+  - nodefaults
+  - conda-forge
+  - bioconda
+dependencies:
+  - perl
+  - mlst
+  - perl-bioperl
+  - abricate
+  - python
+  - pandas
+  - openpyxl
+  - numpy
