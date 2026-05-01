@@ -183,6 +183,7 @@ class AMR_Latex_Report:
             ('}',  r'\}'),
             ('~',  r'\textasciitilde{}'),
             ('^',  r'\textasciicircum{}'),
+            ("'",  r'\textquotesingle{}'),   # ← ADD THIS LINE
         ]
         for char, replacement in replacements:
             text = text.replace(char, replacement)
@@ -234,7 +235,7 @@ class AMR_Latex_Report:
         mlst_st                 = kwargs.get('mlst_st', None)
         mlst_detail             = kwargs.get('mlst_detail', None)
         mlst_species_lookup     = kwargs.get('mlst_species_lookup', None)
-        mlst_version            = kwargs.get('mlst_version', None),
+        mlst_version            = kwargs.get('mlst_version', None)
         seqsero2_serotype       = kwargs.get('seqsero2_serotype', None)
         seqsero2_antigenic      = kwargs.get('seqsero2_antigenic', None)
         seqsero2_subspecies     = kwargs.get('seqsero2_subspecies', None)
@@ -254,6 +255,9 @@ class AMR_Latex_Report:
         abricate_res_seq_number    = kwargs.get('abricate_res_seq_number', None)
         software_versions       = kwargs.get('software_versions', None)
         bracken_pie_file        = kwargs.get('bracken_pie_file', None)
+
+        print(f"DEBUG inside latex_document: Received spades_version = {spades_version!r}")
+        print(f"DEBUG inside latex_document: Received mlst_version = {mlst_version!r}")
 
         def clean_filename(path):
             if not path:
@@ -287,6 +291,10 @@ class AMR_Latex_Report:
         safe_rgl            = self._e(rgl)             if rgl is not None else '0'
         safe_depth_str      = f'{self.genome_coverage_depth:,.1f}X'
         safe_genome_bp      = f'{self.genome_size:,}bp'
+
+        print(f"DEBUG before _e(): mlst_version is {mlst_version!r}")
+        safe_mlst_version   = self._e(mlst_version) if mlst_version else 'N/A'
+        print(f"DEBUG after _e(): safe_mlst_version is {safe_mlst_version!r}")
 
         tex_document = sample_name + ".tex"
         w = open(tex_document, 'w')
@@ -435,7 +443,7 @@ class AMR_Latex_Report:
         print(r'\end{tabularx}', file=w)
         print(r'\end{minipage}', file=w)
         print(r'', file=w)
-        print(r'{\footnotesize\ De novo assembly performed using '
+        print(r'{\footnotesize\ De novo assembly performed using SPAdes '
               r'\href{http://cab.spbu.ru/software/spades/}'
               r'{\textcolor{midnightblue}{%s}.} }\\' % safe_spades, file=w)
 
@@ -530,7 +538,7 @@ class AMR_Latex_Report:
             print(r'\end{tabular}', file=w)
             print(r'\end{minipage}', file=w)
 
-        # AMR sectio
+        # AMR section
         if not mininum_report:
             print(r'\newpage', file=w)
             print(r'\fancyhf{}', file=w)
@@ -567,7 +575,7 @@ class AMR_Latex_Report:
             print(r'\noindent\makebox[\linewidth]{\rule{16cm}{0.4pt}}', file=w)
             print(r'\vspace{15mm}', file=w)
 
-            # ABRicate tables 
+            # ABRicate tables
             ABRICATE_COLS = ['SEQUENCE', 'START', 'END', 'GENE', 'COVERAGE',
                              'GAPS', '%COVERAGE', '%IDENTITY', 'ACCESSION', 'PRODUCT']
 
@@ -582,28 +590,22 @@ class AMR_Latex_Report:
                     print(r'\noindent', file=w)
                     print(r'{\small', file=w)
                     print(r'\renewcommand{\arraystretch}{0.9}', file=w)
-                    # Use longtable instead of tabular for automatic page breaks
                     print(r'\begin{longtable}{ p{3.5cm}|c|c|c|c|c|c|c|c|p{5cm} }', file=w)
-                    # First page header
                     print(r'\hline', file=w)
                     print(r'SEQUENCE&START&END&GENE&COVERAGE&GAPS&\%COVERAGE&\%IDENTITY&ACCESSION&PRODUCT\\', file=w)
                     print(r'\hline', file=w)
                     print(r'\endfirsthead', file=w)
-                    # Continuation header for subsequent pages
                     print(r'\multicolumn{10}{c}{\textit{\small (Continued from previous page)}} \\', file=w)
                     print(r'\hline', file=w)
                     print(r'SEQUENCE&START&END&GENE&COVERAGE&GAPS&\%COVERAGE&\%IDENTITY&ACCESSION&PRODUCT\\', file=w)
                     print(r'\hline', file=w)
                     print(r'\endhead', file=w)
-                    # Footer for continuation pages
                     print(r'\hline', file=w)
                     print(r'\multicolumn{10}{r}{\textit{\small (Continued on next page)}} \\', file=w)
                     print(r'\endfoot', file=w)
-                    # Footer for last page
                     print(r'\noalign{\global\arrayrulewidth=0.75mm}', file=w)
                     print(r'\arrayrulecolor{midnightblue}\hline', file=w)
                     print(r'\endlastfoot', file=w)
-                    # Data rows
                     df = pd.read_csv(tab_file, sep='\t')
                     df = df[ABRICATE_COLS]
                     for idx in df.index:
@@ -644,6 +646,15 @@ class AMR_Latex_Report:
                 print(r'\cfoot{\thepage\ of \zref[abspage]{LastPage}}', file=w)
                 print(r'\rfoot{}', file=w)
                 print(r'\newpage', file=w)
+            else:
+                print(r'\end{landscape}', file=w)
+                print(r'\fancyhf{}', file=w)
+                print(r'\fancyhead[L]{\includegraphics[scale=0.15]{%s}}' % LOGO, file=w)
+                print(r'\fancyhead[R]{\textbf{Isolate ID:}{%s}}' % safe_sample_name, file=w)
+                print(r'\lfoot{\today}', file=w)
+                print(r'\cfoot{\thepage\ of \zref[abspage]{LastPage}}', file=w)
+                print(r'\rfoot{}', file=w)
+                print(r'\newpage', file=w)
 
             # ── AMRFinder table ────────────────────────────────────────────
             print(r'\newpage', file=w)
@@ -667,78 +678,82 @@ class AMR_Latex_Report:
                 print(r'\vspace{2mm}', file=w)
                 print(r'\noindent', file=w)
                 print(r'{\footnotesize', file=w)
-                print(r'\renewcommand{\arraystretch}{0.9}', file=w)
-                # Use longtable instead of tabular for automatic page breaks
-                print(r'\begin{longtable}{p{2.5cm}|c|c|c|p{3cm}|c|c|c|c|c|c}', file=w)
-                # First page header
-                print(r'\textcolor{midnightblue}{\bf Contig id}&'
-                      r'\textcolor{midnightblue}{\bf Start}&'
-                      r'\textcolor{midnightblue}{\bf Stop}&'
-                      r'\textcolor{midnightblue}{\bf Gene symbol}&'
-                      r'\textcolor{midnightblue}{\bf Sequence name}&'
-                      r'\textcolor{midnightblue}{\bf Scope}&'
-                      r'\textcolor{midnightblue}{\bf Element Subtype}&'
-                      r'\textcolor{midnightblue}{\bf Class}&'
-                      r'\textcolor{midnightblue}{\bf Subclass}&'
-                      r'\textcolor{midnightblue}{\bf \% Coverage}&'
-                      r'\textcolor{midnightblue}{\bf \% Identity} \\', file=w)
+                print(r'\renewcommand{\arraystretch}{1.5}', file=w) 
+                print(r'\begin{longtable}{|p{3.5cm}|p{1.2cm}|p{1.2cm}|p{2.2cm}|p{4cm}|p{1.5cm}|p{2cm}|p{2.5cm}|p{2.5cm}|p{0.9cm}|p{0.9cm}|}', file=w)
+
+                print(r'\hline', file=w)
+                print(r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf Contig id}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf Start}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf Stop}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf Gene symbol}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf Sequence name}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf Scope}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf Element Subtype}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf Class}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf Subclass}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf \% Cov}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf \% ID}} \\', file=w)
                 print(r'\hline', file=w)
                 print(r'\endfirsthead', file=w)
-                # Continuation header for subsequent pages
+
                 print(r'\multicolumn{11}{c}{\textit{\small (Continued from previous page)}} \\', file=w)
                 print(r'\hline', file=w)
-                print(r'\textcolor{midnightblue}{\bf Contig id}&'
-                      r'\textcolor{midnightblue}{\bf Start}&'
-                      r'\textcolor{midnightblue}{\bf Stop}&'
-                      r'\textcolor{midnightblue}{\bf Gene symbol}&'
-                      r'\textcolor{midnightblue}{\bf Sequence name}&'
-                      r'\textcolor{midnightblue}{\bf Scope}&'
-                      r'\textcolor{midnightblue}{\bf Element Subtype}&'
-                      r'\textcolor{midnightblue}{\bf Class}&'
-                      r'\textcolor{midnightblue}{\bf Subclass}&'
-                      r'\textcolor{midnightblue}{\bf \% Coverage}&'
-                      r'\textcolor{midnightblue}{\bf \% Identity} \\', file=w)
+                print(r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf Contig id}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf Start}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf Stop}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf Gene symbol}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf Sequence name}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf Scope}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf Element Subtype}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf Class}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf Subclass}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf \% Cov}}&'
+                    r'\rotatebox[origin=l]{45}{\textcolor{midnightblue}{\bf \% ID}} \\', file=w)
                 print(r'\hline', file=w)
                 print(r'\endhead', file=w)
-                # Footer for continuation pages
                 print(r'\hline', file=w)
                 print(r'\multicolumn{11}{r}{\textit{\small (Continued on next page)}} \\', file=w)
                 print(r'\endfoot', file=w)
-                # Footer for last page
                 print(r'\noalign{\global\arrayrulewidth=0.75mm}', file=w)
                 print(r'\arrayrulecolor{midnightblue}\hline', file=w)
                 print(r'\endlastfoot', file=w)
-                # Data rows
+                # Data rows - Contig[1], Start[2], Stop[3], Gene[5], SeqName[6], Type[9], Class[11], %Cov[15], %ID[16]
                 df = pd.read_csv(amrfinder_file, sep='\t', header=None, skiprows=1)
                 for idx in df.index:
                     s = df.iloc[idx]
                     if (s.iloc[9] in ("AMR", "POINT")) and s.iloc[10] != "EFFLUX":
-                        cols = [s.iloc[i] for i in [1, 2, 3, 5, 6, 7, 9, 10, 11, 15, 16]]
+                    
+                        column_indices = [1, 2, 3, 5, 6, 12, 8, 10, 11, 15, 16]
+
+                        cols = [s.iloc[i] for i in column_indices]
+                    
                         safe_cells = []
                         for i, c in enumerate(cols):
                             cell_value = self.escape_latex(str(c))
-                            # Wrap Contig id (index 0) and Sequence name (index 4) with \seqsplit
-                            if i in [0, 4]:
+                            # Column 0: 'Contig id'
+                            if i in [0, 5, 7, 8]:  
                                 cell_value = r'\seqsplit{' + cell_value + r'}'
+                    
                             safe_cells.append(cell_value)
                         print(' & '.join(safe_cells) + r' \\', file=w)
+
                 print(r'\end{longtable}', file=w)
-                print(r'}', file=w)  # ← Close footnotesize
+                print(r'}', file=w)  # close footnotesize
             else:
                 print(r'\noindent', file=w)
                 print(r'\includegraphics[scale=0.35]{amrfinder1.png}', file=w)
                 print(r'\vspace{2mm}', file=w)
-                print(r'\begin{center}', file=w)  # ← ADD: Explicit centering environment
-                print(r'\begin{tabular}{|p{24cm}|}', file=w)  # ← CHANGE: Add borders, reduce width
-                print(r'\noalign{\global\arrayrulewidth=0.75mm}', file=w)  # ← MOVE: Set width before first hline
-                print(r'\arrayrulecolor{midnightblue}', file=w)  # ← MOVE: Set color before first hline
+                print(r'\begin{center}', file=w)
+                print(r'\begin{tabular}{|p{24cm}|}', file=w)
+                print(r'\noalign{\global\arrayrulewidth=0.75mm}', file=w)
+                print(r'\arrayrulecolor{midnightblue}', file=w)
                 print(r'\hline', file=w)
                 print(r'\vspace{1mm}', file=w)
-                print(r'{\Large No Antimicrobial Resistance Genes found.}', file=w)  # ← REMOVE \centerline
+                print(r'{\Large No Antimicrobial Resistance Genes found.}', file=w)
                 print(r'\vspace{2mm}', file=w)
                 print(r'\hline', file=w)
                 print(r'\end{tabular}', file=w)
-                print(r'\end{center}', file=w)  # ← ADD: Close centering environment
+                print(r'\end{center}', file=w)
 
             print(r'\end{landscape}', file=w)
             print(r'\setlength{\headheight}{40pt}', file=w)

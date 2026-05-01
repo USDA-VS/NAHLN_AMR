@@ -152,7 +152,35 @@ def create_excel_summary(args, fastqc_data, quast_data, coverage_depth, sequenci
     df.to_excel(output_filename)
     print(f"Summary Excel file created: {output_filename}")
 
+def parse_versions_file(filepath):
+    """
+    Parses the software_versions.txt file and returns a dictionary of software versions.
+    """
+    versions = {}
+    keywords = {
+        '  mlst: ': 'mlst',
+        '  spades.py: ': 'spades',
+        '  SeqSero2_package.py: ': 'seqsero2',
+        '  amrfinder: ': 'amrfinder',
+        '  abricate: ': 'abricate'
+    }
+    try:
+        with open(filepath, 'r') as f:
+            for line in f:
+                for keyword, key_name in keywords.items():
+                    if line.lstrip().startswith(keyword.lstrip()):
+                        version_string = line.strip().replace(keyword, '').split()[-1]
+                        print(f"DEBUG: Found version: {key_name} = {version_string}")
+                        versions[key_name] = version_string
+    except FileNotFoundError:
+        print(f"Warning: Versions file not found at {filepath}. Versions will be 'N/A'.")
+    
+    print(f"DEBUG: Final versions dictionary created: {versions}")
+    return versions
+
 def main():
+    INCLUDE_ABRICATE_IN_PDF = False # Set to True to include detailed Abricate results in the PDF report
+
     try:
         parser = argparse.ArgumentParser(description="Generate final PDF and Excel reports.")
         parser.add_argument('--meta_id', required=True, help="Sample identifier")
@@ -172,9 +200,17 @@ def main():
         parser.add_argument('--bracken_pie', required=False, default=None, help="Optional Bracken pie chart PNG")
         args = parser.parse_args()
 
-        # --- 1. Load all parsed data from JSON inputs ---
-        print("Loading parsed data from JSON inputs...")
-        
+        # debug info for versions.txt content
+        print("--- DEBUG: START OF versions.txt CONTENT ---")
+        try:
+            with open(args.versions, 'r') as f:
+                print(f.read())
+        except FileNotFoundError:
+            print("--- DEBUG: versions.txt FILE NOT FOUND ---")
+        print("--- DEBUG: END OF versions.txt CONTENT ---")
+
+        software_versions = parse_versions_file(args.versions)
+
         fastqc_data = {}
         if args.fastqc_json and os.path.exists(args.fastqc_json):
             try:
@@ -307,6 +343,9 @@ def main():
             logo_path=args.logo
         )
 
+        print(f"DEBUG: Value for spades_version being passed: {software_versions.get('spades', 'N/A')}")
+        print(f"DEBUG: Value for mlst_version being passed: {software_versions.get('mlst', 'N/A')}")
+
         print("DEBUG: About to call latex_document()...")
         amr_latex_report.latex_document(
             sample_name=args.meta_id,
@@ -329,20 +368,19 @@ def main():
             stat_n50=quast_data.get('N50', 0),
             stat_l50=quast_data.get('L50', 0),
             rgl=quast_data.get('rgl', 0.0),
-            spades_version='N/A',
+            spades_version=software_versions.get('spades', 'N/A'),
             mlst_file=args.mlst_json,
             mlst_scheme=mlst_data.get('scheme', 'N/A'),
             mlst_st=mlst_data.get('type', 'N/A'),
             mlst_detail=mlst_data.get('detail', []),
             mlst_species_lookup=mlst_data.get('species_lookup', 'N/A'),
-            mlst_version='N/A',
+            mlst_version=software_versions.get('mlst', 'N/A'),
             seqsero2_serotype=seqsero_data.get('serotype', None),
             seqsero2_antigenic=seqsero_data.get('antigenic_profile', None),
             seqsero2_subspecies=seqsero_data.get('subspecies', None),
             seqserocomment=seqsero_data.get('comment', None),
             seqsero_file=args.seqsero_json,
             amrfinder_file=args.amrfinder_tab,
-            abricate_report=True,
             abricate_mincov=abricate_data.get('mincov', 0),      # This is "depth" in legacy naming
             abricate_minid=abricate_data.get('minid', 75),       # This is "coverage" in legacy naming
             ab_ncbi_file=args.ab_ncbi_file,
@@ -353,7 +391,8 @@ def main():
             abricate_res_seq_number=abricate_data.get('db_info', {}).get('resfinder', {}).get('sequences', 0),
             software_versions=versions_text,
             bracken_pie_file=args.bracken_pie,
-            logo_path=args.logo
+            logo_path=args.logo,
+            abricate_report=INCLUDE_ABRICATE_IN_PDF
         )
         print("DEBUG: latex_document() completed successfully")
 

@@ -1,9 +1,10 @@
 # amr_nextflow
 
 ## Description
+
 Antimicrobial resistance (AMR) pipeline using Nextflow with dependencies managed by Apptainer/Docker.
 
-----
+---
 
 ## General information
 
@@ -13,18 +14,18 @@ The AMR pipeline provides AMR identification, taxonomic classification, and geno
   <img src="https://raw.githubusercontent.com/USDA-VS/NAHLN_AMR/main/docs/img/AMR.png" width="500" height="700">
 </p>
 
-----
+---
 
 ## Dependencies
 
-- [Nextflow >= v25.10.4](https://docs.seqera.io/nextflow/install)
+- [Nextflow &gt;= v25.10.4](https://docs.seqera.io/nextflow/install)
 - [Apptainer](https://apptainer.org/docs/admin/main/installation.html) (Required for HPC execution) OR [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Required for Mac Laptop execution)
-   - If using Apptainer, pull the Apptainer image (instructions below)
-- [Kraken2 database](https://benlangmead.github.io/aws-indexes/k2) 
+  - If using Apptainer, pull the Apptainer image (instructions below)
+- [Kraken2 database](https://benlangmead.github.io/aws-indexes/k2)
 
 *Nextflow can be installed either [system-wide](https://docs.seqera.io/nextflow/install) or with [Conda](https://anaconda.org/channels/bioconda/packages/nextflow/overview).
 
-------
+---
 
 ## Run the AMR pipeline
 
@@ -33,6 +34,7 @@ The AMR pipeline provides AMR identification, taxonomic classification, and geno
 **The following `nextflow run...` commands must be ran from the GitHub repository location (i.e., /amr_nextflow/).**
 
 **w/Docker on Laptop**
+
 ```bash
 nextflow run amr_nextflow.nf \
 -profile local_docker \
@@ -41,6 +43,7 @@ nextflow run amr_nextflow.nf \
 ```
 
 **w/Apptainer on HPC w/o SLURM**
+
 ```bash
 nextflow run amr_nextflow.nf \
     -profile hpc_apptainer \
@@ -54,6 +57,7 @@ If SLURM is require on a server, you can wrap the above in an sbatch script. Thi
 Alternatively, you may generate a new profile for your specific HPC, if you are not using the NCAH HPC or the NBAF SciComp HPC, following these profiles as examples.
 
 SLURM sbatch wrapper script example:
+
 ```bash
 #!/bin/bash
 
@@ -79,13 +83,16 @@ nextflow run amr_nextflow.nf \
     --outdir "/home/user.name/results-hpc_apptainer" \
     --kraken_db /path/to/databases/kraken/k2_standard_20260226
 ```
+
 *Note the SLURM options, flags and partition names will differ on each HPC. Additionally, module versions may slightly differ and can be replaced by Conda or system-wide installations.*
 
-------
+---
 
 ## Command-line options
 
-```bash
+```
+
+
 usage: nextflow run amr_nextflow.nf [-profile] [--input_files] [-outdir] [--kraken_db] [-resume]
 
 General:
@@ -112,15 +119,15 @@ Reporting:
    --logo               STR      Path to PNG logo for use in PDF reports. (deault: /doc/img/default.png)
 
 Nextflow Options: 
-    -resume                 Pipeline will resume from previous run if terminated
-    -with-report            A single document which includes many useful metrics about a workflow execution
-    -with-trace             Creates an execution tracing file that contains some useful information about each process.executed in your pipeline script
-    -with-timeline          Render an HTML timeline for all processes executed in your pipeline
-    -with-dag               creates a file containing a textual representation of the pipeline execution graph in the DOT format     
+    -resume                     Pipeline will resume from previous run if terminated
+    -qs                 INT     Queue Size option: Limits the number of processes within a executor queue (e.g., SLURM). (default: 100)
+    -with-report                A single document which includes many useful metrics about a workflow execution
+    -with-trace                 Creates an execution tracing file that contains some useful information about each process.executed in your pipeline script
+    -with-timeline              Render an HTML timeline for all processes executed in your pipeline
+    -with-dag                   creates a file containing a textual representation of the pipeline execution graph in the DOT format   
 ```
 
-------
-
+---
 
 ## Detailed Use-Cases for Mac Laptop, NCAH HPC and the NBAF SciComp HPC
 
@@ -138,7 +145,7 @@ A [Kraken database](https://benlangmead.github.io/aws-indexes/k2) must be provid
 
 For example, on the NCAH HPC we have these:
 
- ```bash
+```bash
 ls /project/bioinformatic_databases/databases/kraken/
 
 k2_standard_20260226
@@ -147,11 +154,11 @@ kraken2 #aka kraken2_host
 kraken2_max
 #etc
 #etc
- ```
+```
 
 Download Kraken databases [here](https://benlangmead.github.io/aws-indexes/k2)
 
------
+---
 
 ## How to run on NCAH:
 
@@ -172,7 +179,6 @@ cd git/gitlab/
 ```bash
 git clone https://github.com/USDA-VS/NAHLN_AMR.git
 ```
-
 
 3. Navigate to the data to be analyzed
 
@@ -204,7 +210,7 @@ sbatch ${HOME}/git/gitlab/amr_nextflow/bin/sbatch/cluster_amr_nextflow_ncah_appt
 
 *Paths: Full paths are used here for illustration and clarity. The pipeline does not require absolute paths.*
 
------
+---
 
 ## How to run on a Mac:
 
@@ -226,9 +232,10 @@ conda create -n nextflow-25 nextflow=25.10.4 -c conda-forge -y
 
 conda activate nextflow-25
 ```
-*[Nextflow >= v25.10.4](https://docs.seqera.io/nextflow/install) can also be install system wide*
 
-3. Download the Kraken database of your choosing and note the location you download it to. 
+*[Nextflow &gt;= v25.10.4](https://docs.seqera.io/nextflow/install) can also be install system wide*
+
+3. Download the Kraken database of your choosing and note the location you download it to.
 
 Example where to download from the NCAH HPC:
 
@@ -277,7 +284,7 @@ bash bin/sbatch/cluster_amr_local_docker.sh \
 
 *Execution location: The local version of this pipeline MUST to be executed from the repo location.*
 
------
+---
 
 ## How to run on SciComp:
 
@@ -325,3 +332,4 @@ sbatch ${HOME}/git/gitlab/amr_nextflow/bin/sbatch/cluster_amr_nextflow_scicomp_a
 *Kraken: The default is the large, core nt database, here we are using the smaller k2 standard database.*
 
 *Paths: Full paths are used here for illustration and clarity. The pipeline does not require absolute paths.*
+```

@@ -406,9 +406,9 @@ process ABRICATE {
     cp ${fasta} \$WORKDIR/plasmidfinder_input.fasta
     chmod a+r \$WORKDIR/resfinder_input.fasta \$WORKDIR/ncbi_input.fasta \$WORKDIR/plasmidfinder_input.fasta
 
-    abricate --db resfinder     --mincov ${params.abricate_depth} --minid ${params.abricate_identity} --threads ${task.cpus} \$WORKDIR/resfinder_input.fasta    > "\$WORKDIR/${meta}-resfinder.tab"
-    abricate --db ncbi          --mincov ${params.abricate_depth} --minid ${params.abricate_identity} --threads ${task.cpus} \$WORKDIR/ncbi_input.fasta         > "\$WORKDIR/${meta}-ncbi.tab"
-    abricate --db plasmidfinder --mincov ${params.abricate_depth} --minid ${params.abricate_identity} --threads ${task.cpus} \$WORKDIR/plasmidfinder_input.fasta > "\$WORKDIR/${meta}-plasmidfinder.tab"
+    abricate --db resfinder     --mincov ${params.abricate_depth} --minid ${params.abricate_coverage} --threads ${task.cpus} \$WORKDIR/resfinder_input.fasta    > "\$WORKDIR/${meta}-resfinder.tab"
+    abricate --db ncbi          --mincov ${params.abricate_depth} --minid ${params.abricate_coverage} --threads ${task.cpus} \$WORKDIR/ncbi_input.fasta         > "\$WORKDIR/${meta}-ncbi.tab"
+    abricate --db plasmidfinder --mincov ${params.abricate_depth} --minid ${params.abricate_coverage} --threads ${task.cpus} \$WORKDIR/plasmidfinder_input.fasta > "\$WORKDIR/${meta}-plasmidfinder.tab"
     """
 }
 
@@ -1595,15 +1595,10 @@ workflow {
         .set { ch_all_reads }
 
     ch_all_reads.branch {
-
         single: it.name =~ /_se\.fastq\.gz$/
-
-        paired: (it.name =~ /_R[12](_001)?\.fastq\.gz$/ || 
-                 it.name =~ /_R[12]_cut_amr\.fastq\.gz$/) && 
+        paired: it.name =~ /_R[12](_001)?\.fastq\.gz$/ &&
                 !(it.name =~ /_se\.fastq\.gz$/)
-        
         fasta: it.name =~ /\.(fasta|fa)$/
-    
         unmatched: true
     }
     .set { sorted_reads }
@@ -1613,7 +1608,7 @@ workflow {
     paired_fastqs = sorted_reads.paired
         .map { file ->
             def sample_id = file.name
-                .replaceAll(/_R[12]_cut_amr\.fastq\.gz$/, '')
+                .replaceAll(/_S\d+(_L\d{3})?/, '')
                 .replaceAll(/_R[12](_001)?\.fastq\.gz$/, '')
             tuple(sample_id, file)
         }
@@ -1621,13 +1616,17 @@ workflow {
 
     single_fastqs = sorted_reads.single
         .map { file ->
-            def sample_id = file.name.replaceAll(/(_R1)?_se\.fastq\.gz$/, '')
+            def sample_id = file.name
+                .replaceAll(/_S\d+(_L\d{3})?/, '')
+                .replaceAll(/(_R1)?_se\.fastq\.gz$/, '') // This is really a placeholder since we will implent ONT data in the future
             tuple(sample_id, file)
         }
 
     fastas = sorted_reads.fasta
         .map { file ->
-            def sample_id = file.name.replaceAll(/\.(fasta|fa)$/, '')
+            def sample_id = file.name
+                .replaceAll(/_S\d+(_L\d{3})?/, '')
+                .replaceAll(/\.(fasta|fa)$/, '')
             tuple(sample_id, file)
         }
 
